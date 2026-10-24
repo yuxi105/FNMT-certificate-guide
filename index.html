@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your FNMT certificate checklist</title>
+<style>
+  :root {
+    --ink: #1c2330;
+    --muted: #5a6474;
+    --line: #d9dde4;
+    --page: #f6f7f9;
+    --card: #ffffff;
+    --accent: #1f5fbf;
+    --done: #2f7d4f;
+    --warn-bg: #fff4c2;
+    --warn-line: #d9b300;
+    --alert-bg: #fde8e6;
+    --alert-line: #c0392b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font: 17px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 720px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 1.6rem; line-height: 1.25; margin: 0 0 12px; }
+  .intro p { margin: 0 0 8px; }
+  .intro ul { margin: 0 0 8px; padding-left: 22px; }
+
+  .reminder {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    margin: 16px 0 20px;
+    padding: 10px 14px;
+    background: var(--alert-bg);
+    border: 1px solid var(--alert-line);
+    border-radius: 8px;
+    font-weight: 600;
+  }
+
+  ol.stages { list-style: none; margin: 0; padding: 0; }
+  .stage {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    margin-bottom: 12px;
+  }
+  .stage-head { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
+  .stage-head input[type="checkbox"] {
+    width: 24px; height: 24px; flex: none; margin: 0;
+    accent-color: var(--done); cursor: pointer;
+  }
+  .stage-toggle {
+    flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 4px 0; border: 0; background: none; color: inherit;
+    font: inherit; font-weight: 600; text-align: left; cursor: pointer;
+  }
+  .stage-toggle:focus-visible, .stage-head input:focus-visible {
+    outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px;
+  }
+  .stage-toggle .chevron { flex: none; color: var(--muted); transition: transform .15s; }
+  .stage-toggle[aria-expanded="true"] .chevron { transform: rotate(90deg); }
+  .stage.done .stage-title { color: var(--done); }
+
+  .stage-body { padding: 0 14px 14px 50px; }
+  .stage-body[hidden] { display: none; }
+  .stage-body ol { margin: 0 0 14px; padding-left: 20px; }
+  .stage-body li { margin-bottom: 8px; }
+
+  .confirm {
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-line);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin: 0 0 12px;
+  }
+  .confirm strong { display: block; margin-bottom: 2px; }
+
+  .sources { margin: 0; padding: 12px 0 0; border-top: 1px solid var(--line); font-size: .92rem; }
+  .sources h3 { margin: 0 0 4px; font-size: .92rem; }
+  .sources ul { margin: 0; padding-left: 20px; }
+  .sources a { color: var(--accent); overflow-wrap: anywhere; }
+  .sources .checked { color: var(--muted); }
+
+
+  .progress { margin: 0 0 16px; }
+  .progress-text { margin: 0 0 6px; font-weight: 600; }
+  .progress-text .next { font-weight: 400; color: var(--muted); }
+  .progress-track { height: 10px; background: var(--line); border-radius: 999px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 0; background: var(--done); transition: width .2s; }
+  .stage.current { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .badge {
+    flex: none; font-size: .78rem; font-weight: 700; letter-spacing: .02em;
+    color: #fff; background: var(--accent); border-radius: 999px; padding: 2px 10px;
+  }
+  .badge[hidden] { display: none; }
+  .done-btn {
+    display: inline-block; margin: 14px 0 0; min-height: 44px; padding: 10px 18px;
+    border: 0; border-radius: 8px; background: var(--done); color: #fff;
+    font: inherit; font-weight: 600; cursor: pointer;
+  }
+  .done-btn[hidden] { display: none; }
+  .done-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .all-done {
+    margin: 0 0 16px; padding: 12px 14px; border-radius: 8px;
+    background: #e3f2e8; border: 1px solid var(--done); font-weight: 600;
+  }
+  .all-done[hidden] { display: none; }
+
+  @media (max-width: 480px) { .stage-body { padding-left: 14px; } }
+  @media (prefers-reduced-motion: reduce) { .stage-toggle .chevron, .progress-fill { transition: none; } }
+</style>
+</head>
+<body>
+<main>
+  <header class="intro">
+    <h1>Your first FNMT digital certificate: checklist</h1>
+    <p>This guide is for you if all four of these are true:</p>
+    <ul>
+      <li>You are a non-EU citizen with a valid passport and TIE</li>
+      <li>You are in Barcelona</li>
+      <li>You are using a Windows computer or a Mac</li>
+      <li>You are using the Chrome browser</li>
+    </ul>
+    <p>The certificate and the official FNMT instructions are free. This page only puts the steps in order and links to the official pages.</p>
+  </header>
+
+  <p class="reminder">Never type your NIE, passwords or codes on this site. Enter them only on the official FNMT pages.</p>
+
+  <div class="progress" aria-live="polite">
+    <p class="progress-text"><span id="progress-count"></span> <span class="next" id="progress-next"></span></p>
+    <div class="progress-track" role="progressbar" aria-label="Stages done" aria-valuemin="0" aria-valuemax="6" id="progress-bar">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+  </div>
+  <p class="all-done" id="all-done" hidden>All six stages done. Your certificate works in Chrome and is backed up.</p>
+
+  <ol class="stages" id="stages"></ol>
+</main>
+
+<script>
+// ===== CHECKLIST CONTENT =====
+// Edit only this block to change wording, sources or check dates.
+// The code further down only displays what is written here.
+//
+// Every instruction must come from the official source listed for its stage.
+// When you re-check a source, update its "checked" date below.
+
+const SOURCES = {
+  S1: { label: "FNMT: overall software route", url: "https://www.sede.fnmt.gob.es/certificados/persona-fisica/obtener-certificado-software", checked: "26 September 2026" },
+  S2: { label: "FNMT: preliminary configuration", url: "https://www.sede.fnmt.gob.es/certificados/persona-fisica/obtener-certificado-software/configuracion-previa", checked: "6 October 2026" },
+  S3: { label: "FNMT: request certificate", url: "https://www.sede.fnmt.gob.es/certificados/persona-fisica/obtener-certificado-software/solicitar-certificado", checked: "26 September 2026" },
+  S4: { label: "FNMT: in-person identity verification", url: "https://www.sede.fnmt.gob.es/certificados/persona-fisica/obtener-certificado-software/acreditar-identidad/presencial", checked: "26 September 2026" },
+  S5: { label: "FNMT-linked office locator (map)", url: "https://mapaoficinascert.appspot.com/", checked: "26 September 2026" },
+  S6: { label: "FNMT: download certificate", url: "https://www.sede.fnmt.gob.es/certificados/persona-fisica/obtener-certificado-software/descargar-certificado", checked: "26 September 2026" },
+  S7: { label: "FNMT: check certificate status", url: "https://www.sede.fnmt.gob.es/certificados/persona-fisica/verificar-estado", checked: "26 September 2026" },
+  S8: { label: "FNMT: export a certificate with Chrome on Windows", url: "https://www.sede.fnmt.gob.es/en/preguntas-frecuentes/exp-imp-y-elim-de-certificados/-/asset_publisher/EwGOMAWPq4DV/content/1501-como-puedo-exportar-un-certificado-digital-con-google-chrome-en-windows-", checked: "26 September 2026" },
+  S11: { label: "FNMT: export your certificate from the Mac Keychain", url: "https://www.sede.fnmt.gob.es/preguntas-frecuentes/exp-imp-y-elim-de-certificados/-/asset_publisher/EwGOMAWPq4DV/content/1379-como-puedo-exportar-mi-certificado-desde-el-llavero-de-mac-", checked: "6 October 2026" },
+  S10: { label: "FNMT: recommendations on keeping certificates safe", url: "https://www.sede.fnmt.gob.es/preguntas-frecuentes/problemas-y-dudas/-/asset_publisher/fVZppcBHj0oa/content/1714-recomendaciones-sobre-la-custodia-de-los-certificados", checked: "26 September 2026" },
+};
+
+const STAGES = [
+  {
+    id: "prepare",
+    title: "Prepare your computer",
+    instructions: [
+      "Choose the one computer you will use for the whole process. You must request and download the certificate on the same computer, logged in to the same user account.",
+      "Do not format or reset that computer until the certificate is downloaded.",
+      "Open the official configuration page below and install the FNMT \"Configurador\" software it offers. It is needed to create your certificate's keys. You need permission to install software on the computer. There is a Windows version and a Mac version: pick the one for your computer.",
+      "On a Mac: if a message says the software is from an unidentified developer, allow it in System Settings > Privacy & Security (on older Macs: System Preferences > Security & Privacy > General). If the Mac asks to install Rosetta, allow it.",
+      "Antivirus software or a proxy can interfere with Configurador. If the installation or a later step fails, this is one thing to look at.",
+    ],
+    confirm: [],
+    sources: ["S2"],
+  },
+  {
+    id: "request",
+    title: "Request your certificate code",
+    instructions: [
+      "Open the official request page below in Chrome, on the computer you prepared.",
+      "The official form asks for your identification number, your first surname, your email address (twice) and for you to accept the conditions. Enter these only on the FNMT page.",
+      "You will set a request password. Keep it somewhere safe: you need it again when you download. If you forget it, you have to start the request again.",
+      "FNMT then emails you a request code (\"Código de Solicitud\"). Keep that email. The password and the code are two separate things and you need both.",
+      "The title of the official page may still mention Internet Explorer. The configuration page from stage 1 lists the current browsers.",
+    ],
+    confirm: [],
+    sources: ["S3"],
+  },
+  {
+    id: "verify",
+    title: "Verify your identity in person",
+    instructions: [
+      "Use the official office locator below to choose an authorised office, and arrange to attend in person.",
+      "Read the official identity verification page below before you go, so you know what to bring.",
+      "This guide cannot book appointments and does not know how soon one will be available.",
+    ],
+    confirm: [
+      {
+        title: "Passport plus TIE",
+        text: "The official page lists particular foreigner cards, or an official NIF/NIE allocation document together with a passport. It does not name the exact combination of passport plus TIE. Before you go, confirm with the office that your passport and TIE will be accepted, and ask whether you need to bring anything else.",
+      },
+      {
+        title: "The Barcelona AEAT office",
+        text: "The office map lists AEAT, Plaza Doctor Letamendi 14–23, Barcelona, for personal certificates. That is only a listing. Confirm with the office that it handles your case, whether you need an appointment, and when one is available.",
+      },
+    ],
+    sources: ["S4", "S5"],
+  },
+  {
+    id: "download",
+    title: "Download the certificate",
+    instructions: [
+      "Use the same computer and the same user account you used for the request.",
+      "Open the official download page below in Chrome.",
+      "The official form asks for the same identification number and first surname you used in the request, and your request code. Enter these only on the FNMT page.",
+      "Enter your request password when you are asked for it.",
+      "The certificate is free. FNMT does not charge you to download it.",
+    ],
+    confirm: [
+      {
+        title: "How long to wait before downloading",
+        text: "The official pages disagree. One says you can download about one hour after your identity is verified; another says immediately. If the download is not available straight away, wait at least an hour and try again before assuming something is wrong.",
+      },
+    ],
+    sources: ["S6", "S1", "S4"],
+  },
+  {
+    id: "check",
+    title: "Check it works",
+    instructions: [
+      "On the same computer, open the official certificate status page below in Chrome and follow it.",
+      "If the page shows your certificate as valid, your certificate works in Chrome.",
+      "You do not need a separate \"import\" step after a normal download. Importing is only for putting a backup copy onto a computer.",
+    ],
+    confirm: [],
+    sources: ["S7"],
+  },
+  {
+    id: "backup",
+    title: "Back it up safely",
+    instructions: [
+      "On Windows: follow the official Chrome on Windows export page below to save a copy of your certificate.",
+      "On a Mac: follow the official Mac Keychain export page below. It saves a copy from the Keychain Access app as a .p12 file.",
+      "Make sure the copy includes the private key, and protect it with a password.",
+      "Store the copy somewhere safe, away from the computer, and keep its password somewhere different.",
+      "Never send the backup file or its password to anyone. That includes this site: there is nowhere here to upload it.",
+    ],
+    confirm: [
+      {
+        title: "Backing up on a Mac with Chrome",
+        text: "The official Mac page explains exporting from Keychain Access but does not mention Chrome. Before you export, check that your certificate appears under \"My Certificates\" in Keychain Access. If it does not, stop and ask for help rather than guessing.",
+      },
+    ],
+    sources: ["S8", "S11", "S10"],
+  },
+];
+
+// ===== END OF CHECKLIST CONTENT =====
+
+  // Ticks are saved only in this browser. Nothing is sent anywhere.
+  const STORAGE_KEY = "fnmt-checklist-ticks";
+
+  function loadTicks() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+    catch (e) { return {}; }
+  }
+  function saveTicks(ticks) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(ticks)); }
+    catch (e) { /* storage blocked: the page still works, ticks just won't persist */ }
+  }
+
+  function el(tag, attrs, children) {
+    const node = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (k === "text") node.textContent = v; else node.setAttribute(k, v);
+    }
+    for (const child of children || []) node.append(child);
+    return node;
+  }
+
+  const ticks = loadTicks();
+  const list = document.getElementById("stages");
+  const items = [];
+
+  function setOpen(entry, open) {
+    entry.toggle.setAttribute("aria-expanded", String(open));
+    entry.body.hidden = !open;
+  }
+
+  // Shows how many stages are done, highlights the next unfinished one.
+  function refresh() {
+    const doneCount = STAGES.filter(st => ticks[st.id]).length;
+    const next = items.find(entry => !ticks[entry.stage.id]);
+    document.getElementById("progress-count").textContent = doneCount + " of " + STAGES.length + " stages done.";
+    document.getElementById("progress-next").textContent = next ? "Next: " + next.stage.title + "." : "";
+    document.getElementById("progress-fill").style.width = (100 * doneCount / STAGES.length) + "%";
+    document.getElementById("progress-bar").setAttribute("aria-valuenow", String(doneCount));
+    document.getElementById("all-done").hidden = Boolean(next);
+    items.forEach(entry => {
+      const isNext = entry === next;
+      entry.item.classList.toggle("current", isNext);
+      entry.badge.hidden = !isNext;
+      entry.doneBtn.hidden = Boolean(ticks[entry.stage.id]);
+    });
+    return next;
+  }
+
+  STAGES.forEach((stage, i) => {
+    const bodyId = "body-" + stage.id;
+    const titleId = "title-" + stage.id;
+
+    const box = el("input", { type: "checkbox", id: "tick-" + stage.id, "aria-labelledby": titleId });
+    box.checked = Boolean(ticks[stage.id]);
+
+    const toggle = el("button", { type: "button", class: "stage-toggle", "aria-expanded": "false", "aria-controls": bodyId }, [
+      el("span", { class: "stage-title", id: titleId, text: (i + 1) + ". " + stage.title }),
+      el("span", { class: "badge", text: "Next", hidden: "" }),
+      el("span", { class: "chevron", "aria-hidden": "true", text: "›" }),
+    ]);
+    const badge = toggle.querySelector(".badge");
+    const doneBtn = el("button", { type: "button", class: "done-btn", text: "I've finished this stage" });
+
+    const body = el("div", { class: "stage-body", id: bodyId, hidden: "" }, [
+      el("ol", {}, stage.instructions.map(text => el("li", { text }))),
+      ...stage.confirm.map(c => el("div", { class: "confirm" }, [
+        el("strong", { text: "Needs official confirmation: " + c.title }),
+        el("span", { text: c.text }),
+      ])),
+      el("div", { class: "sources" }, [
+        el("h3", { text: stage.sources.length > 1 ? "Official sources" : "Official source" }),
+        el("ul", {}, stage.sources.map(id => {
+          const s = SOURCES[id];
+          return el("li", {}, [
+            el("a", { href: s.url, target: "_blank", rel: "noopener noreferrer", text: s.label }),
+            el("span", { class: "checked", text: " (last checked " + s.checked + ")" }),
+          ]);
+        })),
+      ]),
+      doneBtn,
+    ]);
+
+    const item = el("li", { class: "stage" + (box.checked ? " done" : "") }, [
+      el("div", { class: "stage-head" }, [box, toggle]),
+      body,
+    ]);
+
+    const entry = { stage, item, toggle, body, box, badge, doneBtn };
+    items.push(entry);
+
+    toggle.addEventListener("click", () => {
+      setOpen(entry, toggle.getAttribute("aria-expanded") !== "true");
+    });
+    box.addEventListener("change", () => {
+      ticks[stage.id] = box.checked;
+      item.classList.toggle("done", box.checked);
+      saveTicks(ticks);
+      refresh();
+    });
+    // Ticks the stage, closes it and opens the next unfinished one.
+    doneBtn.addEventListener("click", () => {
+      box.checked = true;
+      box.dispatchEvent(new Event("change"));
+      setOpen(entry, false);
+      const next = items.find(e => !ticks[e.stage.id]);
+      if (next) {
+        setOpen(next, true);
+        next.item.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+
+    list.append(item);
+  });
+
+  // On return visits, open the next unfinished stage so people pick up where they left off.
+  const firstNext = refresh();
+  if (firstNext) setOpen(firstNext, true);
+</script>
+</body>
+</html>
