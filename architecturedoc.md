@@ -140,6 +140,6 @@ What is guessed and not yet proven:
   - So the switch is a better-reasoned guess, not a proven one. The research and the worker test below are how I check it.
 - Research (Guess 1): [X] posts found from foreigners stuck on the FNMT certificate. Most common stuck point: [stage]. certificadoelectronico.es and foreigners with an NIE: [yes / no / unclear, with source].
 - Test with foreign workers (Guess 2): [X] people tested the checklist without my help; [how far each got].
-- Code and documents now in a repository: [repo link]. No commit was made at the end of class on 13 October.
+- Code and documents now in a repository: https://github.com/yuxi105/FNMT-certificate-guide. No commit was made at the end of class on 13 October.
 - No change to the MVP page or the stack.
 
