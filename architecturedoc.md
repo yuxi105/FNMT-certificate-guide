@@ -78,7 +78,7 @@ What is guessed and not yet proven:
 6. **Download timing.** Official pages disagree (about one hour versus immediately). *(Unresolved)*
 7. **Foreigners working in Spain are the right first group** (replaces "non-EU Esade students", changed 13 October). They need the certificate now for taxes and Social Security; students mostly don't. Based on reasoning plus one anecdote so far. *(Not tested)*
 8. **A static site with browser-saved progress is enough** for the prototype. *(Draft assumption from this document)*
-9. **certificadoelectronico.es does not serve foreigners with an NIE**, which would leave a gap for this guide. *(Unchecked)*
+9. **certificadoelectronico.es leaves a gap.** Checked 24 October: it accepts the TIE (so it competes on my non-EU route) but not the NIE; passports and the EU registration certificate are not mentioned. *(Partly checked)*
 
 ---
 
@@ -138,8 +138,8 @@ What is guessed and not yet proven:
   - Working people need the certificate for tasks they can't avoid: filing their tax return, Social Security procedures and registering as autónomos. This applies to EU workers too.
   - The guest teacher's own trouble with the certificate was the trigger. One anecdote, not proof.
   - So the switch is a better-reasoned guess, not a proven one. The research and the worker test below are how I check it.
-- Research (Guess 1): [X] posts found from foreigners stuck on the FNMT certificate. Most common stuck point: [stage]. certificadoelectronico.es and foreigners with an NIE: [yes / no / unclear, with source].
-- Test with foreign workers (Guess 2): [X] people tested the checklist without my help; [how far each got].
+- Research (Guess 1), 24 and 25 October, with AI help: 21 posts from foreigners stuck on the FNMT certificate, 11 from expat forums (Claude) and 10 from Reddit (ChatGPT, since Reddit blocks Claude). Stuck at: ID check or appointment 6, using it 5, requesting the code 5, computer setup 3, backup 2. Forum posts are old and mostly device problems; Reddit posts are recent (5 in the last 12 months, 6 mention work or taxes) and mostly NIE holders who can't use the video route (needs a DNI) and can't get an appointment. certificadoelectronico.es accepts the TIE but not the NIE (FAQ), so NIE-only and EU users are the gap. Guess 1 is stronger. Possible page change (not made yet): warn NIE holders early and mention walk-ins. Sources: `research-report.md`, `reddit-posts.md`.
+- Test with foreign workers (Guess 2), 25 October: contacted 9 foreign people working in Spain (LinkedIn in English and Chinese, email to professors I know); 2 replied, nobody tried the checklist (both already have the certificate). A foreign professor got it twice through lawyers and then an accountant and was glad not to do it. A foreign assistant teacher did it alone but found it "very confusing" and used ChatGPT for the renewal. So the need is real for workers, but they turn to professionals or free AI chat, not a guide; Guess 3 (€15 for a guide) looks weaker. Next: reach users through employers' HR, gestorías or expat work groups.
 - Code and documents now in a repository: https://github.com/yuxi105/FNMT-certificate-guide. No commit was made at the end of class on 13 October.
 - No change to the MVP page or the stack.
 
