@@ -111,6 +111,41 @@
   }
   .all-done[hidden] { display: none; }
 
+
+  .link-btn { border: 0; background: none; padding: 0; color: var(--accent); font: inherit; text-decoration: underline; cursor: pointer; }
+  .tips {
+    background: #eef4fd; border: 1px solid #b9cdef; border-radius: 8px;
+    padding: 10px 12px; margin: 0 0 12px;
+  }
+  .tips strong { display: block; margin-bottom: 4px; }
+  .tips ul { margin: 0; padding-left: 20px; }
+  .tips li { margin-bottom: 6px; }
+  .meta { color: var(--muted); font-size: .85rem; }
+  .stuck-btn {
+    display: inline-block; margin: 14px 0 0 8px; min-height: 44px; padding: 10px 18px;
+    border: 1px solid var(--accent); border-radius: 8px; background: #fff; color: var(--accent);
+    font: inherit; font-weight: 600; cursor: pointer;
+  }
+  .stuck-btn:focus-visible, .stuck-panel button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .stuck-panel {
+    margin-top: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: #fafbfc;
+  }
+  .stuck-panel[hidden], .stuck-answer[hidden] { display: none; }
+  .stuck-panel fieldset { border: 0; padding: 0; margin: 0 0 10px; }
+  .stuck-panel legend { font-weight: 600; margin-bottom: 4px; padding: 0; }
+  .stuck-panel label { display: block; margin: 2px 0; }
+  .stuck-panel .small-btn {
+    min-height: 40px; padding: 8px 14px; margin: 4px 6px 4px 0; border-radius: 8px;
+    border: 1px solid var(--accent); background: var(--accent); color: #fff; font: inherit; font-weight: 600; cursor: pointer;
+  }
+  .stuck-panel .small-btn.secondary { background: #fff; color: var(--accent); }
+  .stuck-answer { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+  .stuck-answer p { margin: 0 0 8px; }
+  .report-code {
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .85rem; background: #fff;
+    border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; overflow-wrap: anywhere; margin: 0 0 8px;
+  }
+
   @media (max-width: 480px) { .stage-body { padding-left: 14px; } }
   @media (prefers-reduced-motion: reduce) { .stage-toggle .chevron, .progress-fill { transition: none; } }
 </style>
@@ -130,6 +165,7 @@
   </header>
 
   <p class="reminder">Never type your NIE, passwords or codes on this site. Enter them only on the official FNMT pages.</p>
+  <p class="meta">How this page learns: if you press "I'm stuck here" in a stage, it asks three multiple-choice questions and shows any checked fix. It then makes a short report with only your choices (no name, no NIE). Nothing is sent unless you copy and send it yourself. Reports help me write fixes for the next person, and a person checks every fix against the official FNMT page before it appears here. <button type="button" class="link-btn" id="forget">Delete my saved reports</button> <span id="forget-msg"></span></p>
 
   <div class="progress" aria-live="polite">
     <p class="progress-text"><span id="progress-count"></span> <span class="next" id="progress-next"></span></p>
@@ -261,6 +297,37 @@ const STAGES = [
 
 // ===== END OF CHECKLIST CONTENT =====
 
+// ===== LEARNING LOOP: STUCK REASONS AND CHECKED TIPS =====
+// Choices people can pick when they press "I'm stuck here". Multiple choice only,
+// so nobody types personal data into this page.
+const STUCK_REASONS = {
+  prepare:  [["configurador", "Configurador won't install or open"], ["no-permission", "I'm not allowed to install software on this computer"], ["other", "Something else"]],
+  request:  [["form-error", "The form rejects my details"], ["no-email", "The email with the request code didn't arrive"], ["other", "Something else"]],
+  verify:   [["no-appointment", "I can't get an appointment"], ["document", "I'm not sure my documents will be accepted"], ["other", "Something else"]],
+  download: [["not-available", "The download isn't available yet"], ["lost-code", "I lost my request password or code"], ["other", "Something else"]],
+  check:    [["not-valid", "The status page doesn't show my certificate as valid"], ["other", "Something else"]],
+  backup:   [["not-in-keychain", "Mac: my certificate isn't under \"My Certificates\" in Keychain Access"], ["no-export", "I can't find the export option"], ["other", "Something else"]],
+};
+const DOCUMENTS = [["tie", "TIE card"], ["paper-nie", "Paper NIE without photo"], ["eu-cert", "EU registration certificate"], ["other", "Other"]];
+const COMPUTERS = [["windows", "Windows"], ["mac", "Mac"], ["other", "Other"]];
+
+// Where people can send their stuck report. Leave "" to offer "Copy report" only.
+const REPORT_EMAIL = "";
+
+// TIPS are the fixes the page shows. HUMAN SAFETY CHECK: a tip is shown ONLY when a
+// person has checked it against an official source above and filled in
+// approvedBy, source and checked. Draft tips (approvedBy: "") stay hidden.
+// "reports" = how many stuck reports asked for this fix. Higher shows first.
+// New tips are written with review.html, then pasted here.
+const TIPS = [
+  { stage: "download", reason: "not-available", text: "The official pages disagree on when the download opens. Wait at least one hour after your identity check, then try again on the same computer and user account you used for the request.", source: "S6", checked: "26 September 2026", approvedBy: "Yuxiang", reports: 0 },
+  { stage: "prepare", reason: "configurador", text: "Antivirus software or a proxy can block Configurador. On a Mac, allow it in System Settings > Privacy & Security, and allow Rosetta if asked.", source: "S2", checked: "6 October 2026", approvedBy: "Yuxiang", reports: 0 },
+  // DRAFT, hidden until checked on the official FNMT page: FNMT video identification (2.99 EUR + VAT) for people who can't get an appointment.
+  { stage: "verify", reason: "no-appointment", text: "FNMT also offers identity verification by video call for 2.99 EUR + VAT instead of an office visit.", source: "", checked: "", approvedBy: "", reports: 0 },
+];
+// ===== END OF LEARNING LOOP CONTENT =====
+
+
   // Ticks are saved only in this browser. Nothing is sent anywhere.
   const STORAGE_KEY = "fnmt-checklist-ticks";
 
@@ -280,6 +347,111 @@ const STAGES = [
     }
     for (const child of children || []) node.append(child);
     return node;
+  }
+
+
+  // ----- Learning loop -----
+  const REPORTS_KEY = "fnmt-stuck-reports";
+  function isApproved(t) { return Boolean(t.text && t.approvedBy && t.checked && SOURCES[t.source]); }
+  function tipsFor(stageId) {
+    return TIPS.filter(t => t.stage === stageId && isApproved(t)).sort((a, b) => b.reports - a.reports);
+  }
+  function reasonLabel(stageId, reason) {
+    const r = (STUCK_REASONS[stageId] || []).find(x => x[0] === reason);
+    return r ? r[1] : reason;
+  }
+  function saveReport(report) {
+    try {
+      const all = JSON.parse(localStorage.getItem(REPORTS_KEY)) || [];
+      const i = all.findIndex(r => r.id === report.id);
+      if (i >= 0) all[i] = report; else all.push(report);
+      localStorage.setItem(REPORTS_KEY, JSON.stringify(all));
+    } catch (e) { /* storage blocked: the report can still be copied */ }
+  }
+  function reportCode(r) {
+    return ["fnmt-stuck", "v1", r.stage, r.reason, r.document, r.computer, "helped:" + r.helped, r.date].join("|");
+  }
+  function tipsBox(stage) {
+    const tips = tipsFor(stage.id);
+    if (!tips.length) return null;
+    return el("div", { class: "tips" }, [
+      el("strong", { text: "Where others got stuck here" }),
+      el("ul", {}, tips.map(t => el("li", {}, [
+        el("span", { text: reasonLabel(stage.id, t.reason) + ": " + t.text + " " }),
+        el("span", { class: "meta", text: "(Checked against " + SOURCES[t.source].label + ", " + t.checked + ")" }),
+      ]))),
+    ]);
+  }
+  function radioGroup(name, legend, options) {
+    return el("fieldset", {}, [
+      el("legend", { text: legend }),
+      ...options.map(([value, label]) => el("label", {}, [
+        el("input", { type: "radio", name, value }), document.createTextNode(" " + label),
+      ])),
+    ]);
+  }
+  function stuckPanel(stage) {
+    const p = "stuck-" + stage.id;
+    const panel = el("div", { class: "stuck-panel", hidden: "" });
+    const showBtn = el("button", { type: "button", class: "small-btn", text: "Show me a fix" });
+    const answer = el("div", { class: "stuck-answer", hidden: "", "aria-live": "polite" });
+    panel.append(
+      radioGroup(p + "-reason", "What is the problem?", STUCK_REASONS[stage.id] || [["other", "Something else"]]),
+      radioGroup(p + "-doc", "Which document do you have? (optional)", DOCUMENTS),
+      radioGroup(p + "-pc", "Which computer? (optional)", COMPUTERS),
+      showBtn, answer,
+    );
+    const pick = name => { const c = panel.querySelector('input[name="' + name + '"]:checked'); return c ? c.value : ""; };
+
+    showBtn.addEventListener("click", () => {
+      const reason = pick(p + "-reason");
+      answer.replaceChildren();
+      answer.hidden = false;
+      if (!reason) { answer.append(el("p", { text: "Please choose what the problem is first." })); return; }
+      const report = {
+        id: Date.now().toString(36), stage: stage.id, reason,
+        document: pick(p + "-doc") || "unknown", computer: pick(p + "-pc") || "unknown",
+        helped: "no-tip", date: new Date().toISOString().slice(0, 10),
+      };
+      const tip = tipsFor(stage.id).find(t => t.reason === reason);
+      const code = el("p", { class: "report-code" });
+      const update = () => { code.textContent = reportCode(report); saveReport(report); };
+
+      if (tip) {
+        report.helped = "unknown";
+        answer.append(
+          el("p", { text: "Others had this problem. Checked fix: " + tip.text }),
+          el("p", { class: "meta", text: "Checked against " + SOURCES[tip.source].label + ", " + tip.checked + "." }),
+        );
+        const yes = el("button", { type: "button", class: "small-btn secondary", text: "This helped" });
+        const no = el("button", { type: "button", class: "small-btn secondary", text: "Still stuck" });
+        const thanks = el("p", { class: "meta" });
+        yes.addEventListener("click", () => { report.helped = "yes"; update(); thanks.textContent = "Thanks. Your answer is in the report below."; });
+        no.addEventListener("click", () => { report.helped = "no"; update(); thanks.textContent = "Sorry. Please send the report below so this fix can be improved. The official source in this stage is the safest place to check meanwhile."; });
+        answer.append(el("p", {}, [yes, no]), thanks);
+      } else {
+        answer.append(el("p", { text: "There is no checked fix for this yet. Please send the short report below so one can be added. Until then, the official source in this stage is the safest place to look." }));
+      }
+      answer.append(el("p", { class: "meta", text: "Your report (no personal data, only your choices):" }), code);
+      const copyBtn = el("button", { type: "button", class: "small-btn", text: "Copy report" });
+      copyBtn.addEventListener("click", () => {
+        const done = () => { copyBtn.textContent = "Copied"; };
+        if (navigator.clipboard) navigator.clipboard.writeText(code.textContent).then(done, () => {});
+      });
+      answer.append(copyBtn);
+      if (REPORT_EMAIL) {
+        const mail = el("a", { class: "small-btn secondary", href: "#", text: "Email report" });
+        mail.addEventListener("click", ev => {
+          ev.preventDefault();
+          location.href = "mailto:" + REPORT_EMAIL + "?subject=" + encodeURIComponent("FNMT checklist: stuck report") + "&body=" + encodeURIComponent(code.textContent);
+        });
+        answer.append(mail);
+      } else {
+        answer.append(el("p", { class: "meta", text: "Send it to the person who shared this page with you." }));
+      }
+      update();
+    });
+    return panel;
   }
 
   const ticks = loadTicks();
@@ -323,6 +495,12 @@ const STAGES = [
     ]);
     const badge = toggle.querySelector(".badge");
     const doneBtn = el("button", { type: "button", class: "done-btn", text: "I've finished this stage" });
+    const stuckBtn = el("button", { type: "button", class: "stuck-btn", "aria-expanded": "false", text: "I'm stuck here" });
+    const panel = stuckPanel(stage);
+    stuckBtn.addEventListener("click", () => {
+      panel.hidden = !panel.hidden;
+      stuckBtn.setAttribute("aria-expanded", String(!panel.hidden));
+    });
 
     const body = el("div", { class: "stage-body", id: bodyId, hidden: "" }, [
       el("ol", {}, stage.instructions.map(text => el("li", { text }))),
@@ -330,6 +508,7 @@ const STAGES = [
         el("strong", { text: "Needs official confirmation: " + c.title }),
         el("span", { text: c.text }),
       ])),
+      ...[tipsBox(stage)].filter(Boolean),
       el("div", { class: "sources" }, [
         el("h3", { text: stage.sources.length > 1 ? "Official sources" : "Official source" }),
         el("ul", {}, stage.sources.map(id => {
@@ -341,6 +520,8 @@ const STAGES = [
         })),
       ]),
       doneBtn,
+      stuckBtn,
+      panel,
     ]);
 
     const item = el("li", { class: "stage" + (box.checked ? " done" : "") }, [
@@ -373,6 +554,12 @@ const STAGES = [
     });
 
     list.append(item);
+  });
+
+  // Lets people remove the stuck reports saved in their own browser.
+  document.getElementById("forget").addEventListener("click", () => {
+    try { localStorage.removeItem(REPORTS_KEY); } catch (e) {}
+    document.getElementById("forget-msg").textContent = "Done. No reports are saved in this browser.";
   });
 
   // On return visits, open the next unfinished stage so people pick up where they left off.

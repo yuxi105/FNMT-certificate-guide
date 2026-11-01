@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stuck report review</title>
+<style>
+  :root { --ink:#1c2330; --muted:#5a6474; --line:#d9dde4; --page:#f6f7f9; --card:#fff; --accent:#1f5fbf; --warn-bg:#fff4c2; --warn-line:#d9b300; --alert-bg:#fde8e6; --alert-line:#c0392b; --ok:#2f7d4f; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--page); color:var(--ink); font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  main { max-width:860px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { font-size:1.5rem; margin:0 0 8px; }
+  h2 { font-size:1.15rem; margin:28px 0 8px; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; margin-bottom:16px; }
+  textarea, input[type=text], select { width:100%; font:inherit; padding:8px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+  textarea { min-height:120px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.85rem; }
+  label { display:block; margin:10px 0 4px; font-weight:600; }
+  label.check { font-weight:400; display:flex; gap:8px; align-items:flex-start; }
+  button { min-height:40px; padding:8px 16px; border-radius:8px; border:0; background:var(--accent); color:#fff; font:inherit; font-weight:600; cursor:pointer; margin-top:10px; }
+  button:disabled { background:#9aa6b8; cursor:not-allowed; }
+  table { width:100%; border-collapse:collapse; font-size:.92rem; }
+  th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  tr.pick { cursor:pointer; }
+  tr.pick:hover { background:#eef4fd; }
+  .muted { color:var(--muted); font-size:.9rem; }
+  .headline { padding:10px 12px; border-radius:8px; background:#eef4fd; border:1px solid #b9cdef; font-weight:600; }
+  .flag { background:var(--alert-bg); border:1px solid var(--alert-line); border-radius:8px; padding:8px 12px; margin-top:10px; }
+  .flag[hidden], .headline[hidden] { display:none; }
+  pre { white-space:pre-wrap; overflow-wrap:anywhere; background:#fff; border:1px solid var(--line); border-radius:6px; padding:8px; font-size:.85rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Stuck report review</h1>
+  <p class="muted">For the page owner only. Not linked from the checklist. Nothing here is sent anywhere; it all runs in this browser.</p>
+
+  <section>
+    <h2>1. Paste the reports you received</h2>
+    <p class="muted">One report per line, as people copied them, for example <code>fnmt-stuck|v1|verify|no-appointment|paper-nie|mac|helped:no-tip|2026-11-01</code>. Other text is ignored.</p>
+    <textarea id="input" aria-label="Reports"></textarea>
+    <button id="count" type="button">Count reports</button>
+  </section>
+
+  <section>
+    <h2>2. Where people get stuck (ranked)</h2>
+    <p class="headline" id="headline" hidden></p>
+    <div id="results"><p class="muted">No reports counted yet.</p></div>
+  </section>
+
+  <section>
+    <h2>3. Write a checked fix (human safety check)</h2>
+    <p class="muted">Click a row above to fill in the stage and reason. A fix only reaches users after you check it against an official source and tick both boxes.</p>
+    <label for="stage">Stage id</label>
+    <select id="stage">
+      <option>prepare</option><option>request</option><option>verify</option><option>download</option><option>check</option><option>backup</option>
+    </select>
+    <label for="reason">Reason id</label>
+    <input type="text" id="reason" placeholder="for example no-appointment">
+    <label for="text">Fix shown to users (one or two sentences)</label>
+    <textarea id="text" style="min-height:70px;font-family:inherit;font-size:1rem"></textarea>
+    <label for="source">Official source id from the checklist (S1 to S11)</label>
+    <input type="text" id="source" placeholder="for example S4">
+    <label for="who">Approved by</label>
+    <input type="text" id="who" value="Yuxiang">
+    <div class="flag" id="flags" hidden></div>
+    <label class="check"><input type="checkbox" id="ok1"> I opened the official source today, and the fix says only what it says.</label>
+    <label class="check"><input type="checkbox" id="ok2"> The fix has no personal data, no paid services or outside links, and never asks people to share codes, passwords or certificate files.</label>
+    <button id="make" type="button" disabled>Make the tip</button>
+    <div id="out"></div>
+  </section>
+</main>
+
+<script>
+  const $ = id => document.getElementById(id);
+  let counts = {};
+
+  function parse(text) {
+    return text.split(/\r?\n/).map(l => l.trim()).filter(l => l.startsWith("fnmt-stuck|")).map(l => {
+      const [, v, stage, reason, document, computer, helped, date] = l.split("|");
+      return { v, stage, reason, document, computer, helped: (helped || "").replace("helped:", ""), date };
+    }).filter(r => r.stage && r.reason);
+  }
+
+  function cell(tag, text) { const c = document.createElement(tag); c.textContent = text; return c; }
+
+  $("count").addEventListener("click", () => {
+    const reports = parse($("input").value);
+    counts = {};
+    const byStage = {};
+    for (const r of reports) {
+      const k = r.stage + "|" + r.reason;
+      const c = counts[k] = counts[k] || { stage: r.stage, reason: r.reason, n: 0, yes: 0, no: 0, docs: {}, pcs: {} };
+      c.n++; if (r.helped === "yes") c.yes++; if (r.helped === "no") c.no++;
+      c.docs[r.document] = (c.docs[r.document] || 0) + 1;
+      c.pcs[r.computer] = (c.pcs[r.computer] || 0) + 1;
+      byStage[r.stage] = (byStage[r.stage] || 0) + 1;
+    }
+    const rows = Object.values(counts).sort((a, b) => b.n - a.n);
+    const res = $("results");
+    res.replaceChildren();
+    if (!rows.length) { res.append(cell("p", "No valid reports found.")); $("headline").hidden = true; return; }
+    const top = rows[0];
+    const topStage = Object.entries(byStage).sort((a, b) => b[1] - a[1])[0];
+    $("headline").textContent = reports.length + " reports. Most stuck stage: " + topStage[0] + " (" + topStage[1] + "). Top problem: " + top.stage + " / " + top.reason + " (" + top.n + ").";
+    $("headline").hidden = false;
+    const fmt = o => Object.entries(o).sort((a, b) => b[1] - a[1]).map(([k, v]) => k + " " + v).join(", ");
+    const table = document.createElement("table");
+    const head = document.createElement("tr");
+    ["Stage", "Reason", "Reports", "Fix helped (yes / still stuck)", "Documents", "Computers"].forEach(h => head.append(cell("th", h)));
+    table.append(head);
+    rows.forEach(r => {
+      const tr = document.createElement("tr");
+      tr.className = "pick";
+      tr.title = "Click to write a fix for this";
+      [r.stage, r.reason, String(r.n), (r.yes + r.no) ? r.yes + " / " + r.no : "no tip yet", fmt(r.docs), fmt(r.pcs)].forEach(t => tr.append(cell("td", t)));
+      tr.addEventListener("click", () => { $("stage").value = r.stage; $("reason").value = r.reason; $("text").focus(); });
+      table.append(tr);
+    });
+    res.append(table, cell("p", "A fix that keeps getting \"still stuck\" answers needs rewriting or removing."));
+    res.lastChild.className = "muted";
+  });
+
+  // Warns about things the safety check should catch. The human still decides.
+  function flags(text) {
+    const f = [];
+    if (/https?:\/\/(?![^\s]*\.gob\.es)/i.test(text)) f.push("It contains a link that is not an official .gob.es page.");
+    if (/€|eur\b|\bpay|gestor|lawyer|abogado/i.test(text)) f.push("It mentions money or a paid service. Check it is official and not an advert.");
+    if (/password|contraseña|code|código|\.p12|\.pfx/i.test(text) && /send|share|email|whatsapp|envía/i.test(text)) f.push("It may ask people to share a password, code or certificate file. Never allowed.");
+    if (/\b[XYZ]?\d{7,8}[A-Z]?\b/i.test(text)) f.push("It looks like it contains an ID number. Remove personal data.");
+    if (/delete|borrar|format|reset|reinstall/i.test(text)) f.push("It tells people to delete, reset or reinstall something. That can destroy their certificate keys: check carefully.");
+    return f;
+  }
+
+  function check() {
+    const f = flags($("text").value);
+    $("flags").hidden = !f.length;
+    $("flags").textContent = f.length ? "Look again before approving: " + f.join(" ") : "";
+    $("make").disabled = !($("ok1").checked && $("ok2").checked && $("text").value.trim() && /^S\d+$/.test($("source").value.trim()) && $("reason").value.trim() && $("who").value.trim());
+  }
+  ["text", "source", "reason", "who", "ok1", "ok2"].forEach(id => $(id).addEventListener("input", check));
+
+  $("make").addEventListener("click", () => {
+    const d = new Date();
+    const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    const tip = {
+      stage: $("stage").value, reason: $("reason").value.trim(), text: $("text").value.trim(),
+      source: $("source").value.trim(), checked: d.getDate() + " " + months[d.getMonth()] + " " + d.getFullYear(),
+      approvedBy: $("who").value.trim(), reports: (counts[$("stage").value + "|" + $("reason").value.trim()] || { n: 0 }).n,
+    };
+    const line = "  { stage: " + JSON.stringify(tip.stage) + ", reason: " + JSON.stringify(tip.reason) + ", text: " + JSON.stringify(tip.text) +
+      ", source: " + JSON.stringify(tip.source) + ", checked: " + JSON.stringify(tip.checked) + ", approvedBy: " + JSON.stringify(tip.approvedBy) + ", reports: " + tip.reports + " },";
+    const out = $("out");
+    out.replaceChildren(cell("p", "Paste this line inside the TIPS list in index.html (or replace the old line for the same stage and reason), then publish the page:"), cell("pre", line));
+  });
+</script>
+</body>
+</html>

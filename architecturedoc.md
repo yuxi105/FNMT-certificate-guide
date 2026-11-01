@@ -1,6 +1,6 @@
 # Architecture document
 
-Last updated: 24 October 2026
+Last updated: 1 November 2026
 
 **How to read this file.** Items marked **[Decided]** come from decisions already recorded in the project (mainly Handout 3 and the 4 October handover). Items marked **[Draft — confirm]** are suggestions written for this document that you have not yet approved. Nothing here means code has been written, a prototype exists or the idea is validated.
 
@@ -25,6 +25,7 @@ Rules this project follows:
 3. **Content stays visible and checkable.** All step text, sources and check dates sit in one readable block, not scattered through the code, so each claim can be checked by hand against the sources. (The earlier plan of a questionnaire with if-then rules is not in the MVP; I screen test users myself.) **[Decided]**
 4. **Build the thinnest slice for one profile first.** Only one supported path until it is tested: non-EU applicant, valid passport and TIE, Chrome (Windows or Mac), Barcelona, clear English. Anyone outside that profile is told the site does not cover them yet. New profiles are added only when test evidence justifies them. **[Decided]**
 5. **AI drafts, I review and own.** AI may write code, content and tests, but I check every procedural claim against official sources and test the prototype's behaviour before any user sees it. Responsibility for approved work stays with me. **[Decided]**
+6. **The page learns only through a human gate.** User stuck reports can change what the page shows, but no fix reaches users until I have checked it against an official source and recorded who approved it and when. The code hides any tip without an approver, a source and a check date. **[Decided]** (1 November 2026)
 
 ---
 
@@ -37,6 +38,7 @@ Chosen in Session 4 for the MVP. It fits the constraints: a solo founder with be
 - **One static HTML file** (plain HTML, CSS and a little JavaScript, no framework, no server): the one-page checklist. It opens by double-clicking, is free to host later, and is easy for AI to generate and for me to read.
 - **Step content in one clearly marked block inside that file**, so content can be updated after re-checking sources without touching the logic. A separate data file was tried and dropped, because the page broke when the file was missing.
 - **Progress saved in the user's own browser** (localStorage), so no accounts or database are needed.
+- **Learning loop without a backend (added 1 November 2026):** each stage has an "I'm stuck here" button with multiple-choice questions only (problem, document, computer). The page shows a checked fix if one exists and builds a one-line report the user can copy and send. A separate owner-only page, `review.html`, counts and ranks pasted reports and turns an approved fix into a line for the TIPS list in `index.html`. No model training, no server and no analytics.
 - **Later, only if Guess 3 is tested: payment through a hosted checkout link** from a payment provider, so the site never handles card details.
 
 **Dependencies to avoid, and why**
@@ -79,6 +81,8 @@ What is guessed and not yet proven:
 7. **Foreigners working in Spain are the right first group** (replaces "non-EU Esade students", changed 13 October). They need the certificate now for taxes and Social Security; students mostly don't. Based on reasoning plus one anecdote so far. *(Not tested)*
 8. **A static site with browser-saved progress is enough** for the prototype. *(Draft assumption from this document)*
 9. **certificadoelectronico.es leaves a gap.** Checked 24 October: it accepts the TIE (so it competes on my non-EU route) but not the NIE; passports and the EU registration certificate are not mentioned. *(Partly checked)*
+10. **People will send stuck reports.** The loop only learns if users copy and send their report by hand. Nobody has done it yet. *(Not tested)*
+11. **The ID-check gap may be closing.** Barcelona City Council's page says FNMT now offers video identification for €2.99 + VAT, and a news article says ISTEC accepts NIE + passport by video. Neither is checked on the official provider pages yet. *(Found 31 October, not checked)*
 
 ---
 
@@ -143,3 +147,17 @@ What is guessed and not yet proven:
 - Code and documents now in a repository: https://github.com/yuxi105/FNMT-certificate-guide. No commit was made at the end of class on 13 October.
 - No change to the MVP page or the stack.
 
+### 1 November 2026 (Session 7: products that learn)
+
+- Competitor map: the strongest competitor is free AI chat (ChatGPT). 2 of the 5 foreign workers who replied used it, 1 paid professionals, and nobody used a guide. My advantage against it is trust (steps checked against official pages, with Barcelona-specific details), shown by the Handout 5 copycat test, which missed every checked detail. Not yet shown with real users.
+- New risk: FNMT video identification (€2.99 + VAT) and ISTEC (NIE + passport by video) may shrink the ID-check problem. Added as assumption 11.
+- User data: still no page usage data and no tracking. The three behaviors come from what people told me: stuck at the ID check (explicit), handing the hard part to a professional or AI chat (explicit), and praising the page without using it (implicit). The loop is built around **the stage where a user gets stuck**.
+- Built the learning loop with Claude Code, in `mvp/site/index.html` and the new `mvp/site/review.html`:
+  - Input: "I'm stuck here" in each stage, with multiple-choice answers only (problem, document, computer), and "This helped" or "Still stuck" after a fix is shown.
+  - Output: a checked fix for that stage and problem if one exists, plus a "Where others got stuck here" box in the stage, ranked by how many reports asked for each fix.
+  - Learning: I paste received reports into `review.html`, which ranks stages and problems and shows the documents, computers and "helped" answers for each.
+  - Human safety check: before a fix goes on the page, I check it against an official source and tick two boxes (it matches the source; no personal data, paid links or requests to share codes or files). `review.html` also flags risky wording, and the page hides any tip without an approver, source and date. Cost: about 5 minutes per report and 20 to 30 minutes per new fix, €0.
+  - Seeded with two fixes already checked for the page (download timing, Configurador blocked by antivirus) and one hidden draft (FNMT video identification) that waits for checking.
+- Not done yet: no address for receiving reports (`REPORT_EMAIL` is empty, so users can only copy the report), no analytics, and the new page is not uploaded to GitHub yet.
+- New rule 6 (human gate) and assumption 10 (people will send reports).
+- Safety and ethics (Deliverable 5): added a plain-language "How this page learns" note and a "Delete my saved reports" link to the page. Sharing is off by default and reports contain only multiple-choice answers. Bias risk: ranking by report count favours the majority (TIE, Windows, English), so `review.html` splits every problem by document and computer, and each group's "helped" rate is checked. Red line: the loop never publishes a fix only because many people reported it; a person checks every fix against an official source first (rule 6).
