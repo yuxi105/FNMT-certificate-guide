@@ -1,6 +1,6 @@
 # Architecture document
 
-Last updated: 1 November 2026
+Last updated: 7 November 2026
 
 **How to read this file.** Items marked **[Decided]** come from decisions already recorded in the project (mainly Handout 3 and the 4 October handover). Items marked **[Draft — confirm]** are suggestions written for this document that you have not yet approved. Nothing here means code has been written, a prototype exists or the idea is validated.
 
@@ -38,7 +38,7 @@ Chosen in Session 4 for the MVP. It fits the constraints: a solo founder with be
 - **One static HTML file** (plain HTML, CSS and a little JavaScript, no framework, no server): the one-page checklist. It opens by double-clicking, is free to host later, and is easy for AI to generate and for me to read.
 - **Step content in one clearly marked block inside that file**, so content can be updated after re-checking sources without touching the logic. A separate data file was tried and dropped, because the page broke when the file was missing.
 - **Progress saved in the user's own browser** (localStorage), so no accounts or database are needed.
-- **Learning loop without a backend (added 1 November 2026):** each stage has an "I'm stuck here" button with multiple-choice questions only (problem, document, computer). The page shows a checked fix if one exists and builds a one-line report the user can copy and send. A separate owner-only page, `review.html`, counts and ranks pasted reports and turns an approved fix into a line for the TIPS list in `index.html`. No model training, no server and no analytics.
+- **Learning loop without a backend (added 1 November 2026):** each stage has an "I'm stuck here" button with multiple-choice questions only (problem, document, computer). The page shows a checked fix if one exists and builds a one-line report the user can copy and send. A separate owner-only page, `review.html`, counts and ranks pasted reports and turns an approved fix into a line for the TIPS list in `index.html`. No model training, no server and no analytics. Since 7 November, `review.html` blocks any fix that mentions a website outside an official list (fnmt.gob.es, agenciatributaria.gob.es, firmaelectronica.gob.es), even when both safety boxes are ticked.
 - **Later, only if Guess 3 is tested: payment through a hosted checkout link** from a payment provider, so the site never handles card details.
 
 **Dependencies to avoid, and why**
@@ -158,6 +158,17 @@ What is guessed and not yet proven:
   - Learning: I paste received reports into `review.html`, which ranks stages and problems and shows the documents, computers and "helped" answers for each.
   - Human safety check: before a fix goes on the page, I check it against an official source and tick two boxes (it matches the source; no personal data, paid links or requests to share codes or files). `review.html` also flags risky wording, and the page hides any tip without an approver, source and date. Cost: about 5 minutes per report and 20 to 30 minutes per new fix, €0.
   - Seeded with two fixes already checked for the page (download timing, Configurador blocked by antivirus) and one hidden draft (FNMT video identification) that waits for checking.
-- Not done yet: no address for receiving reports (`REPORT_EMAIL` is empty, so users can only copy the report), no analytics, and the new page is not uploaded to GitHub yet.
+- Uploaded to GitHub on 1 November (`index.html`, new `review.html`, this document). Not done yet: no address for receiving reports (`REPORT_EMAIL` is empty, so users can only copy the report) and no analytics.
 - New rule 6 (human gate) and assumption 10 (people will send reports).
 - Safety and ethics (Deliverable 5): added a plain-language "How this page learns" note and a "Delete my saved reports" link to the page. Sharing is off by default and reports contain only multiple-choice answers. Bias risk: ranking by report count favours the majority (TIE, Windows, English), so `review.html` splits every problem by document and computer, and each group's "helped" rate is checked. Red line: the loop never publishes a fix only because many people reported it; a person checks every fix against an official source first (rule 6).
+
+### 7 November 2026 (Session 8: workflow and evals)
+
+- Workflow map (5 steps, no AI model): 1 follow the stage (fixed rule: my checked text), 2 say what's wrong (user, multiple choice), 3 find a checked fix (fixed rule: TIPS list), 4 report back (user), 5 learn and publish (me, `review.html`). Step I trusted least: step 3, because only 2 of 11 specific problems have an approved fix.
+- Test set: 15 cases in `handout8/FNMT-guide-error-analysis.xlsx`. 10 normal (7 based on real posts from the October research) and 5 attacks aimed where text actually enters the system: messages sent with reports, a forged report line, an EU user, 25 fake reports (Red Line), and a shared computer. Each case has "what a good answer must do" (drafted with AI).
+- Run 1 (page as it was): 6 of 10 normal cases OK, 2 of 5 attacks handled. Errors per step: 1: 4, 2: 1, 3: 1, 4: 0, 5: 1. The weak step was step 1, not step 3: the page never said where it stops (which surname to type, moving to a new computer, using the certificate after stage 5, EU users). Security findings: `review.html` let a fix with a fake FNMT look-alike domain through without a warning; the unchecked video ID draft is readable in the page source.
+- Fix (step 1 only): header now says who the page is not checked for (EU citizens as the example) and links the official FNMT route and NIE pages, and says where the guide stops. Stage 2 has a "Which surname to type" box (needs official confirmation). Stage 5 says the guide ends there and points to the official Autofirma page. Stage 6 explains moving to a new computer with the official FNMT import pages. New sources S12 to S15.
+- Guardrail (worst attack, case 12): `review.html` blocks "Make the tip" when a fix mentions any website that is not on the official list, including addresses without https:// and look-alikes such as fnmt.gob.es.fake-site.com.
+- Run 2 (same 15 cases): 9 of 10 normal, 4 of 5 attacks, step 1 errors 4 to 0. Nothing that worked before broke (cases 2, 5, 6 and 7 gave identical output; a fix with no outside website can still be made).
+- Still open: case 4 (no stuck choice for "the send button does nothing", a step 2 problem left for the next round), case 15 (draft tips sit in the public page code; move drafts out of `index.html`), and `review.html` can't tell 25 copied reports from 25 people.
+- To do before uploading to GitHub (rule 5): I open the four new sources (S12 to S15) myself and confirm the new lines match them. The check dates were set from an AI fetch of the pages on 7 November; the two import pages were found by title, not read in full.

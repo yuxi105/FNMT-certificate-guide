@@ -120,10 +120,22 @@
     res.lastChild.className = "muted";
   });
 
+  // GUARDRAIL (added 7 November 2026, Handout 8): a fix may only mention official websites.
+  // Any web address whose domain is not on this list blocks "Make the tip", even with both boxes ticked.
+  // Catches addresses without https:// and look-alikes such as fnmt.gob.es.fake-site.com.
+  const OFFICIAL_DOMAINS = ["fnmt.gob.es", "agenciatributaria.gob.es", "firmaelectronica.gob.es"];
+  function unofficialAddresses(text) {
+    const found = text.match(/(?:https?:\/\/)?(?:www\.)?(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/[^\s]*)?/gi) || [];
+    return found.map(a => a.replace(/^https?:\/\//i, "").split("/")[0].toLowerCase().replace(/[.,;:!?)]+$/, ""))
+      .filter(host => !/\.(html?|p12|pfx|exe|dmg|pdf)$/.test(host))
+      .filter(host => !OFFICIAL_DOMAINS.some(d => host === d || host.endsWith("." + d)));
+  }
+
   // Warns about things the safety check should catch. The human still decides.
   function flags(text) {
     const f = [];
-    if (/https?:\/\/(?![^\s]*\.gob\.es)/i.test(text)) f.push("It contains a link that is not an official .gob.es page.");
+    const bad = unofficialAddresses(text);
+    if (bad.length) f.push("BLOCKED: it mentions a website that is not on the official list (" + bad.join(", ") + "). Remove it. Fixes may only point to official pages.");
     if (/€|eur\b|\bpay|gestor|lawyer|abogado/i.test(text)) f.push("It mentions money or a paid service. Check it is official and not an advert.");
     if (/password|contraseña|code|código|\.p12|\.pfx/i.test(text) && /send|share|email|whatsapp|envía/i.test(text)) f.push("It may ask people to share a password, code or certificate file. Never allowed.");
     if (/\b[XYZ]?\d{7,8}[A-Z]?\b/i.test(text)) f.push("It looks like it contains an ID number. Remove personal data.");
@@ -135,7 +147,7 @@
     const f = flags($("text").value);
     $("flags").hidden = !f.length;
     $("flags").textContent = f.length ? "Look again before approving: " + f.join(" ") : "";
-    $("make").disabled = !($("ok1").checked && $("ok2").checked && $("text").value.trim() && /^S\d+$/.test($("source").value.trim()) && $("reason").value.trim() && $("who").value.trim());
+    $("make").disabled = unofficialAddresses($("text").value).length > 0 || !($("ok1").checked && $("ok2").checked && $("text").value.trim() && /^S\d+$/.test($("source").value.trim()) && $("reason").value.trim() && $("who").value.trim());
   }
   ["text", "source", "reason", "who", "ok1", "ok2"].forEach(id => $(id).addEventListener("input", check));
 

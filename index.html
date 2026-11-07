@@ -161,6 +161,8 @@
       <li>You are using a Windows computer or a Mac</li>
       <li>You are using the Chrome browser</li>
     </ul>
+    <p><strong>If any of these is not true, this guide has not been checked for your case yet.</strong> For example, EU citizens prove their identity with the EU registration certificate (Certificado de Registro de la Unión Europea) together with their NIE, which this guide does not cover. Please follow the official FNMT pages instead: <a href="https://www.sede.fnmt.gob.es/certificados/persona-fisica/obtener-certificado-software" target="_blank" rel="noopener noreferrer">how to get the certificate</a> and <a href="https://www.sede.fnmt.gob.es/registro-inicio/preguntas-frecuentes/-/asset_publisher/DKnDigPrgk4U/content/4-5-problematica-del-uso-del-nie" target="_blank" rel="noopener noreferrer">which documents prove your identity with an NIE</a>.</p>
+    <p>Where this guide stops: when your certificate shows as valid (stage 5) and you have a safe backup (stage 6). Using the certificate on tax or other government websites is not covered, apart from a pointer in stage 5.</p>
     <p>The certificate and the official FNMT instructions are free. This page only puts the steps in order and links to the official pages.</p>
   </header>
 
@@ -196,6 +198,10 @@ const SOURCES = {
   S7: { label: "FNMT: check certificate status", url: "https://www.sede.fnmt.gob.es/certificados/persona-fisica/verificar-estado", checked: "26 September 2026" },
   S8: { label: "FNMT: export a certificate with Chrome on Windows", url: "https://www.sede.fnmt.gob.es/en/preguntas-frecuentes/exp-imp-y-elim-de-certificados/-/asset_publisher/EwGOMAWPq4DV/content/1501-como-puedo-exportar-un-certificado-digital-con-google-chrome-en-windows-", checked: "26 September 2026" },
   S11: { label: "FNMT: export your certificate from the Mac Keychain", url: "https://www.sede.fnmt.gob.es/preguntas-frecuentes/exp-imp-y-elim-de-certificados/-/asset_publisher/EwGOMAWPq4DV/content/1379-como-puedo-exportar-mi-certificado-desde-el-llavero-de-mac-", checked: "6 October 2026" },
+  S12: { label: "FNMT: problems using the NIE (which documents prove your identity)", url: "https://www.sede.fnmt.gob.es/registro-inicio/preguntas-frecuentes/-/asset_publisher/DKnDigPrgk4U/content/4-5-problematica-del-uso-del-nie", checked: "7 November 2026" },
+  S13: { label: "FNMT: import a certificate with Chrome on Windows", url: "https://www.sede.fnmt.gob.es/preguntas-frecuentes/exp-imp-y-elim-de-certificados/-/asset_publisher/EwGOMAWPq4DV/content/1500-como-puedo-importar-un-certificado-digital-con-google-chrome-en-windows-", checked: "7 November 2026" },
+  S14: { label: "FNMT: import your certificate into the Mac Keychain", url: "https://www.sede.fnmt.gob.es/preguntas-frecuentes/exp-imp-y-elim-de-certificados/-/asset_publisher/EwGOMAWPq4DV/content/1380-como-puedo-importar-mi-certificado-desde-el-llavero-de-mac-", checked: "7 November 2026" },
+  S15: { label: "Spanish government: Autofirma download and manuals", url: "https://firmaelectronica.gob.es/descargas", checked: "7 November 2026" },
   S10: { label: "FNMT: recommendations on keeping certificates safe", url: "https://www.sede.fnmt.gob.es/preguntas-frecuentes/problemas-y-dudas/-/asset_publisher/fVZppcBHj0oa/content/1714-recomendaciones-sobre-la-custodia-de-los-certificados", checked: "26 September 2026" },
 };
 
@@ -223,7 +229,12 @@ const STAGES = [
       "FNMT then emails you a request code (\"Código de Solicitud\"). Keep that email. The password and the code are two separate things and you need both.",
       "The title of the official page may still mention Internet Explorer. The configuration page from stage 1 lists the current browsers.",
     ],
-    confirm: [],
+    confirm: [
+      {
+        title: "Which surname to type",
+        text: "The form asks for your first surname, but the official request page does not explain names with a middle name or two surnames. Type your first surname exactly as it is written on the TIE you will show at the identity check, and type it the same way when you download. One applicant reported that adding other parts of their name made their code invalid at the appointment. If you are not sure which part is your first surname, ask the office before you submit.",
+      },
+    ],
     sources: ["S3"],
   },
   {
@@ -271,9 +282,10 @@ const STAGES = [
       "On the same computer, open the official certificate status page below in Chrome and follow it.",
       "If the page shows your certificate as valid, your certificate works in Chrome.",
       "You do not need a separate \"import\" step after a normal download. Importing is only for putting a backup copy onto a computer.",
+      "This guide ends here (plus the backup in stage 6). Some procedures on the Agencia Tributaria and other government websites also need the official signing app Autofirma. If Autofirma says it can't find any certificate, first check that the status page above shows your certificate as valid in Chrome on this computer, then follow the official Autofirma page below.",
     ],
     confirm: [],
-    sources: ["S7"],
+    sources: ["S7", "S15"],
   },
   {
     id: "backup",
@@ -284,6 +296,7 @@ const STAGES = [
       "Make sure the copy includes the private key, and protect it with a password.",
       "Store the copy somewhere safe, away from the computer, and keep its password somewhere different.",
       "Never send the backup file or its password to anyone. That includes this site: there is nowhere here to upload it.",
+      "Moving to a new computer: make the backup copy above, then import it on the new computer with the official import page below (Chrome on Windows, or the Mac Keychain). Keep the certificate on the old computer until the new one shows it as valid (stage 5).",
     ],
     confirm: [
       {
@@ -291,7 +304,7 @@ const STAGES = [
         text: "The official Mac page explains exporting from Keychain Access but does not mention Chrome. Before you export, check that your certificate appears under \"My Certificates\" in Keychain Access. If it does not, stop and ask for help rather than guessing.",
       },
     ],
-    sources: ["S8", "S11", "S10"],
+    sources: ["S8", "S11", "S13", "S14", "S10"],
   },
 ];
 
